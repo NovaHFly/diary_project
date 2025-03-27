@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "diary_project"
+version = "0.1.0"
+description = "Online diary app"
+authors = ["NovaHFly <mugiviska@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+django = "^5.1.7"
+djangorestframework = "^3.15.2"
+psycopg2 = "^2.9.10"
+djoser = "^2.3.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
