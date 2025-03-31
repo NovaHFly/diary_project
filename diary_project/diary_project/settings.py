@@ -9,6 +9,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 APPS_PATH = BASE_DIR / 'apps'
 sys.path.append(str(APPS_PATH))
 
+DATA_PATH = Path(os.getenv('DATA_PATH', BASE_DIR / 'data'))
+
 
 SECRET_KEY = os.getenv('DJANGO_SECRET', get_random_secret_key())
 
