@@ -11,6 +11,7 @@ preview = true
 [lint.isort]
 combine-as-imports = true
 order-by-type = false
+known-first-party = ['apps']
 
 [lint.flake8-quotes]
 inline-quotes = "single"
