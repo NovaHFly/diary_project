@@ -14,6 +14,9 @@ psycopg2 = "^2.9.10"
 djoser = "^2.3.1"
 
 
+[tool.poetry.group.testing.dependencies]
+ruff = "^0.11.4"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
