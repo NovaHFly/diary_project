@@ -18,6 +18,12 @@ class Tag(models.Model):
 
     class Meta:
         ordering = ['author', 'name']
+        constraints = [
+            models.UniqueConstraint(
+                name='Unique tag name for author',
+                fields=['author', 'name'],
+            ),
+        ]
 
 
 class Note(models.Model):
@@ -38,3 +44,13 @@ class Note(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        constraints = [
+            models.UniqueConstraint(
+                name='Unique note creation time for author',
+                fields=['author', 'created_at'],
+            ),
+            models.UniqueConstraint(
+                name='Unique note title for author',
+                fields=['author', 'title'],
+            ),
+        ]
