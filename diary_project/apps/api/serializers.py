@@ -3,8 +3,7 @@ from pathlib import Path
 import rest_framework.serializers as serializers
 
 from diary.models import Note, Tag
-
-from .util import write_to_random_file
+from diary.util import write_to_random_file
 
 
 class TagSerializer(serializers.ModelSerializer):
