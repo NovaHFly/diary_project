@@ -16,6 +16,15 @@ djoser = "^2.3.1"
 
 [tool.poetry.group.testing.dependencies]
 ruff = "^0.11.4"
+pytest = "^8.3.5"
+pytest-django = "^4.11.1"
+pytest-lazy-fixtures = "^1.1.2"
+
+[tool.pytest.ini_options]
+pythonpath = "diary_project/"
+DJANGO_SETTINGS_MODULE = "diary_project.settings"
+testpaths = "tests/"
+python_files = "test_*.py"
 
 [build-system]
 requires = ["poetry-core"]
