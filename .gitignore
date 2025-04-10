@@ -5,3 +5,4 @@ __pycache__
 *.txt
 *.sqlite3
 data/
+.vscode
