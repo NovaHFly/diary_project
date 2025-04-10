@@ -37,10 +37,6 @@ class Note(models.Model):
         ordering = ['-created_at']
         constraints = [
             models.UniqueConstraint(
-                name='Unique note creation time for author',
-                fields=['author', 'created_at'],
-            ),
-            models.UniqueConstraint(
                 name='Unique note title for author',
                 fields=['author', 'title'],
             ),
