@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from pytest import mark, raises
 
+from diary.constants import MAX_TITLE_LENGTH
 from diary.models import Tag
 
 pytestmark = mark.django_db
@@ -14,10 +15,10 @@ def test_valid_tag(valid_tag_data):
 def test_long_name(valid_tag_data):
     with raises(
         ValidationError,
-        match=r'name.+at most 100 characters',
+        match=r'name.+at most {} characters'.format(MAX_TITLE_LENGTH),
     ):
         Tag.objects.create(
-            **valid_tag_data | {'name': 'r' * 101}
+            **valid_tag_data | {'name': 'r' * (MAX_TITLE_LENGTH + 1)}
         ).clean_fields()
 
 

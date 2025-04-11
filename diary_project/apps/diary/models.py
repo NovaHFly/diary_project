@@ -1,12 +1,14 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from diary.constants import MAX_TITLE_LENGTH
+
 User = get_user_model()
 
 
 class Tag(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.SlugField(max_length=100)
+    name = models.SlugField(max_length=MAX_TITLE_LENGTH)
 
     def __str__(self) -> str:
         return self.name
@@ -25,7 +27,7 @@ class Note(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=MAX_TITLE_LENGTH)
     text = models.TextField()
 
     tags = models.ManyToManyField(Tag)
