@@ -11,6 +11,15 @@ class TagSerializer(serializers.ModelSerializer):
             'name',
         ]
 
+    def validate(self, attrs):
+        if Tag.objects.filter(
+            author=self.context['request'].user, name=attrs['name']
+        ):
+            raise serializers.ValidationError(
+                f'Tag with name {attrs["name"]} exists!'
+            )
+        return attrs
+
 
 class NoteSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
