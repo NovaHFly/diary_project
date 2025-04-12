@@ -20,3 +20,6 @@ class TagsView(ModelViewSet):
 
     def get_queryset(self):
         return Tag.objects.filter(author=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
