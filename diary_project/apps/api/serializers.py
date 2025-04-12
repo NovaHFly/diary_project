@@ -4,27 +4,11 @@ from diary.models import Note, Tag
 
 
 class TagSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        slug_field='username',
-        read_only=True,
-    )
-
-    def to_representation(self, instance: Tag) -> str:
-        return instance.name
-
-    def to_internal_value(self, data: str) -> dict:
-        if not isinstance(data, str):
-            raise serializers.ValidationError(
-                f'Slug name expected, got: {repr(data)}'
-            )
-        return {'name': data, 'author': self.context['request'].user}
-
     class Meta:
         model = Tag
         fields = [
             'id',
             'name',
-            'author',
         ]
 
 
