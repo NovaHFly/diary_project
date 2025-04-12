@@ -30,7 +30,7 @@ class Note(models.Model):
     title = models.CharField(max_length=MAX_TITLE_LENGTH)
     text = models.TextField()
 
-    tags = models.ManyToManyField(Tag)
+    tags = models.ManyToManyField(Tag, related_name='notes')
 
     def __str__(self) -> str:
         return self.title
