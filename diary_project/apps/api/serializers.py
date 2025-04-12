@@ -25,6 +25,11 @@ class NoteSerializer(serializers.ModelSerializer):
             'tags',
         ]
 
+    def to_representation(self, instance):
+        repr = super().to_representation(instance)
+        repr['tags'] = [tag['name'] for tag in repr['tags']]
+        return repr
+
     def create(self, validated_data):
         tags = validated_data.pop('tags')
 
