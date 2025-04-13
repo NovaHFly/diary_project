@@ -1,3 +1,6 @@
+from random import choices
+from string import ascii_letters
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from pytest import fixture
@@ -62,8 +65,31 @@ def valid_note_data(creative_user, some_tag):
 
 
 @fixture
+def new_tag_data():
+    return {'name': 'new_tag'}
+
+
+@fixture
+def new_note_data():
+    return {
+        'title': 'new_note',
+        'text': 'Donec non elit sed augue.',
+        'tags': ['new_tag', 'another_tag', 'some_tag'],
+    }
+
+
+@fixture
 def some_tag(valid_tag_data):
     return Tag.objects.create(**valid_tag_data)
+
+
+@fixture
+def create_many_tags(creative_user):
+    for _ in range(20):
+        Tag.objects.create(
+            author=creative_user,
+            name=''.join(choices(ascii_letters, k=10)),
+        )
 
 
 @fixture
