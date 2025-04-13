@@ -45,7 +45,6 @@ def test_get(
 ):
     response = client.get(url)
     assert response.status_code == status_code
-    # if response.status_code == status.HTTP_200_OK:
     assert response.json() == response_content
 
 
