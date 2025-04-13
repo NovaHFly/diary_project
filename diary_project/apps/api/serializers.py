@@ -37,6 +37,15 @@ class NoteSerializer(serializers.ModelSerializer):
             'tags',
         ]
 
+    def validate(self, attrs):
+        if Note.objects.filter(
+            author=self.context['request'].user, title=attrs['title']
+        ):
+            raise serializers.ValidationError(
+                f'Note with title {attrs["title"]} exists!'
+            )
+        return attrs
+
     def to_representation(self, instance):
         repr = super().to_representation(instance)
         repr['tags'] = [tag.name for tag in self.instance.tags.all()]
