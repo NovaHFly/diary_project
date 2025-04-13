@@ -12,6 +12,14 @@ User = get_user_model()
 
 
 @fixture
+def tag_to_json():
+    def _tag_to_json(tag: Tag) -> dict:
+        return {'id': tag.id, 'name': tag.name}
+
+    return _tag_to_json
+
+
+@fixture
 def create_note():
     def _create_note(**note_data) -> Note:
         tags = note_data.pop('tags')
