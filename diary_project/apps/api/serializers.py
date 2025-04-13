@@ -22,7 +22,10 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class NoteSerializer(serializers.ModelSerializer):
-    tags = TagSerializer(many=True)
+    tags = serializers.ListField(
+        child=serializers.SlugField(),
+        write_only=True,
+    )
 
     class Meta:
         model = Note
@@ -36,18 +39,20 @@ class NoteSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
-        repr['tags'] = [tag['name'] for tag in repr['tags']]
+        repr['tags'] = [tag.name for tag in self.instance.tags.all()]
         return repr
 
     def create(self, validated_data):
         tags = validated_data.pop('tags')
 
-        validated_data['author'] = self.context['request'].user
+        author = validated_data['author'] = self.context['request'].user
         note = super().create(validated_data)
 
-        for tag in tags:
-            tag_obj, _ = Tag.objects.get_or_create(**tag)
-            note.tags.add(tag_obj)
+        tags_list = [
+            Tag.objects.get_or_create(name=tag, author=author)[0]
+            for tag in tags
+        ]
+        note.tags.set(tags_list)
 
         return note
 
@@ -56,7 +61,11 @@ class NoteSerializer(serializers.ModelSerializer):
 
         super().update(instance, validated_data)
 
-        tags_list = [Tag.objects.get_or_create(**tag) for tag in tags]
+        author = self.context['request'].user
+        tags_list = [
+            Tag.objects.get_or_create(name=tag, author=author)[0]
+            for tag in tags
+        ]
         instance.tags.set(tags_list)
 
         return instance
