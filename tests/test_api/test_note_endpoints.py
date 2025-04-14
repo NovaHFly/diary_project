@@ -115,6 +115,7 @@ def test_update(
 
     new_note = Note.objects.get(id=some_note.id)
     assert note_to_json(new_note) == expected_json
+    assert some_note.author == new_note.author
 
 
 @mark.parametrize(
