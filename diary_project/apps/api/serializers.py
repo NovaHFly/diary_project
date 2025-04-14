@@ -48,7 +48,7 @@ class NoteSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
-        repr['tags'] = [tag.name for tag in self.instance.tags.all()]
+        repr['tags'] = [tag.name for tag in instance.tags.all()]
         return repr
 
     def create(self, validated_data):
