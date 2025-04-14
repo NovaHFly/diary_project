@@ -1,14 +1,24 @@
-from random import choices
+from random import choices, randint
 from string import ascii_letters
+from typing import Callable
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from django.utils.timezone import datetime, localtime
 from pytest import fixture
 from rest_framework.test import APIClient
 
 from diary.models import Note, Tag
 
 User = get_user_model()
+
+
+@fixture
+def to_local_time():
+    def _to_local_time(dt: datetime) -> datetime:
+        return localtime(dt)
+
+    return _to_local_time
 
 
 @fixture
@@ -20,7 +30,21 @@ def tag_to_json():
 
 
 @fixture
-def create_note():
+def note_to_json(to_local_time):
+    def _note_to_json(note: Note) -> dict:
+        return {
+            'id': note.id,
+            'title': note.title,
+            'text': note.text,
+            'created_at': to_local_time(note.created_at).isoformat(),
+            'tags': [tag.name for tag in note.tags.all()],
+        }
+
+    return _note_to_json
+
+
+@fixture
+def create_note() -> Callable[..., Note]:
     def _create_note(**note_data) -> Note:
         tags = note_data.pop('tags')
         note = Note.objects.create(**note_data)
@@ -82,7 +106,7 @@ def new_note_data():
     return {
         'title': 'new_note',
         'text': 'Donec non elit sed augue.',
-        'tags': ['new_tag', 'another_tag', 'some_tag'],
+        'tags': sorted(['new_tag', 'another_tag', 'some_tag']),
     }
 
 
@@ -98,6 +122,19 @@ def create_many_tags(creative_user):
             author=creative_user,
             name=''.join(choices(ascii_letters, k=10)),
         )
+
+
+@fixture
+def create_many_notes(creative_user, create_note, create_many_tags):
+    tags = Tag.objects.all()
+    for _ in range(20):
+        note_data = {
+            'title': ''.join(choices(ascii_letters, k=10)),
+            'text': 'Some text',
+            'author': creative_user,
+            'tags': choices(tags, k=randint(3, 5)),
+        }
+        create_note(**note_data)
 
 
 @fixture

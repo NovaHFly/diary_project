@@ -1,0 +1,146 @@
+from pytest import fixture, mark
+from pytest_lazy_fixtures import lf, lfc
+from rest_framework import status
+
+from diary.models import Note
+
+pytestmark = mark.django_db
+
+
+@fixture
+def updated_note_json(some_note, new_note_data, to_local_time):
+    return {
+        'id': some_note.id,
+        'created_at': to_local_time(some_note.created_at).isoformat(),
+    } | new_note_data
+
+
+@mark.usefixtures('some_note')
+@mark.parametrize(
+    ['client', 'url', 'status_code', 'response_content'],
+    [
+        [
+            lf('author_client'),
+            lf('note_list_url'),
+            status.HTTP_200_OK,
+            [lfc('note_to_json', lf('some_note'))],
+        ],
+        [
+            lf('author_client'),
+            lf('note_detail_url'),
+            status.HTTP_200_OK,
+            lfc('note_to_json', lf('some_note')),
+        ],
+        [
+            lf('another_client'),
+            lf('note_list_url'),
+            status.HTTP_200_OK,
+            [],
+        ],
+        [
+            lf('another_client'),
+            lf('note_detail_url'),
+            status.HTTP_404_NOT_FOUND,
+            {'detail': 'No Note matches the given query.'},
+        ],
+    ],
+)
+def test_get(
+    client,
+    url,
+    status_code,
+    response_content,
+):
+    response = client.get(url)
+    assert response.status_code == status_code
+    assert response.json() == response_content
+
+
+def test_create(
+    author_client,
+    note_list_url,
+    new_note_data,
+    note_to_json,
+):
+    note_count = Note.objects.count()
+
+    response = author_client.post(note_list_url, data=new_note_data)
+    assert response.status_code == status.HTTP_201_CREATED
+    assert Note.objects.count() - note_count == 1
+
+    new_note = Note.objects.get(title=new_note_data['title'])
+    assert response.json() == note_to_json(new_note)
+
+
+def test_prevent_create_duplicate(
+    author_client,
+    note_list_url,
+    new_note_data,
+):
+    author_client.post(note_list_url, data=new_note_data)
+
+    note_count = Note.objects.count()
+
+    response = author_client.post(note_list_url, data=new_note_data)
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert Note.objects.count() == note_count
+
+
+@mark.parametrize(
+    ['client', 'status_code', 'expected_json'],
+    [
+        [
+            lf('author_client'),
+            status.HTTP_200_OK,
+            lf('updated_note_json'),
+        ],
+        [
+            lf('another_client'),
+            status.HTTP_404_NOT_FOUND,
+            lfc('note_to_json', lf('some_note')),
+        ],
+    ],
+)
+def test_update(
+    client,
+    note_detail_url,
+    new_note_data,
+    status_code,
+    some_note,
+    note_to_json,
+    expected_json,
+):
+    response = client.patch(note_detail_url, data=new_note_data)
+    assert response.status_code == status_code
+
+    new_note = Note.objects.get(id=some_note.id)
+    assert note_to_json(new_note) == expected_json
+
+
+@mark.parametrize(
+    ['client', 'status_code', 'deleted_items_count'],
+    [
+        [lf('author_client'), status.HTTP_204_NO_CONTENT, 1],
+        [lf('another_client'), status.HTTP_404_NOT_FOUND, 0],
+    ],
+)
+def test_delete(
+    client,
+    note_detail_url,
+    status_code,
+    deleted_items_count,
+):
+    note_count = Note.objects.count()
+
+    response = client.delete(note_detail_url)
+    assert response.status_code == status_code
+
+    assert note_count - Note.objects.count() == deleted_items_count
+
+
+@mark.usefixtures('create_many_notes')
+def test_ordering(author_client, note_list_url):
+    response = author_client.get(note_list_url)
+
+    notes = response.json()
+    assert notes == sorted(notes, key=lambda x: x['created_at'], reverse=True)
