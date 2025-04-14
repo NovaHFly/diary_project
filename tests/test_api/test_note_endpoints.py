@@ -110,7 +110,7 @@ def test_update(
     note_to_json,
     expected_json,
 ):
-    response = client.patch(note_detail_url, data=new_note_data)
+    response = client.put(note_detail_url, data=new_note_data)
     assert response.status_code == status_code
 
     new_note = Note.objects.get(id=some_note.id)

@@ -100,7 +100,7 @@ def test_update(
     some_tag,
     expected_tag_name,
 ):
-    response = client.patch(tag_detail_url, data=new_tag_data)
+    response = client.put(tag_detail_url, data=new_tag_data)
     assert response.status_code == status_code
 
     new_tag = Tag.objects.get(id=some_tag.id)
