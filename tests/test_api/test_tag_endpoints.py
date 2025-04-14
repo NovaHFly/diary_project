@@ -134,5 +134,4 @@ def test_ordering(author_client, tag_list_url):
     response = author_client.get(tag_list_url)
 
     tags = response.json()
-    print(tags)
     assert tags == sorted(tags, key=lambda x: x['name'])
