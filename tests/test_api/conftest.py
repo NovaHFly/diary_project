@@ -1,11 +1,16 @@
 from random import choices, randint
 from string import ascii_letters
 
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 from django.utils.timezone import datetime, localtime
 from pytest import fixture
+from rest_framework.test import APIClient
 
 from diary.models import Note, Tag
+
+User = get_user_model()
 
 
 @fixture
@@ -39,6 +44,18 @@ def tag_to_json():
 
 
 @fixture
+def user_to_json():
+    def _user_to_json(user: AbstractUser) -> dict:
+        return {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+        }
+
+    return _user_to_json
+
+
+@fixture
 def create_many_tags(creative_user):
     for _ in range(20):
         Tag.objects.create(
@@ -58,6 +75,28 @@ def create_many_notes(creative_user, create_note, create_many_tags):
             'tags': choices(tags, k=randint(3, 5)),
         }
         create_note(**note_data)
+
+
+@fixture
+def user_password():
+    return 'Som3P@55word'
+
+
+@fixture
+def some_user(user_password):
+    return User.objects.create_user(
+        username='some_user',
+        email='some_user@diary.com',
+        password=user_password,
+    )
+
+
+@fixture
+def some_user_client(some_user):
+    client = APIClient()
+    client.force_authenticate(some_user)
+    client.user = some_user
+    return client
 
 
 @fixture
@@ -92,3 +131,33 @@ def note_list_url():
 @fixture
 def note_detail_url(some_note):
     return reverse('api:notes-detail', kwargs={'pk': some_note.pk})
+
+
+@fixture
+def users_list_url():
+    return reverse('api:user-list')
+
+
+@fixture
+def user_profile_url():
+    return reverse('api:user-me')
+
+
+@fixture
+def user_set_username_url():
+    return reverse('api:user-set-username')
+
+
+@fixture
+def user_set_password_url():
+    return reverse('api:user-set-password')
+
+
+@fixture
+def token_login_url():
+    return reverse('api:login')
+
+
+@fixture
+def token_logout_url():
+    return reverse('api:logout')
