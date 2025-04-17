@@ -1,3 +1,5 @@
+from random import choice, choices
+
 from pytest import fixture, mark
 from pytest_lazy_fixtures import lf, lfc
 from rest_framework import status
@@ -169,6 +171,39 @@ def test_ordering(author_client, note_list_url):
 
     notes = response.json()
     assert notes == sorted(notes, key=lambda x: x['created_at'], reverse=True)
+
+
+@mark.usefixtures('create_many_notes')
+def test_title_filter(author_client, note_list_url):
+    query = choice(choice(Note.objects.all()).title)
+
+    response = author_client.get(note_list_url + f'?title={query}')
+    response_ids = sorted(item['id'] for item in response.json())
+    db_ids = sorted(
+        note.id for note in Note.objects.filter(title__contains=query)
+    )
+
+    assert response_ids == db_ids
+
+
+@mark.usefixtures('create_many_notes')
+def test_tags_filter(author_client, note_list_url):
+    random_tag_names = [
+        tag.name for tag in choices(choice(Note.objects.all()).tags.all(), k=2)
+    ]
+
+    query = '&'.join(f'tags={name}' for name in random_tag_names)
+
+    response = author_client.get(note_list_url + f'?{query}')
+    response_ids = sorted(item['id'] for item in response.json())
+    db_ids = sorted(
+        {
+            note.id
+            for note in Note.objects.filter(tags__name__in=random_tag_names)
+        }
+    )
+
+    assert response_ids == db_ids
 
 
 @mark.parametrize(
