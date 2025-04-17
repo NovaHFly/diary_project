@@ -2,7 +2,7 @@ from pytest import fixture, mark
 from pytest_lazy_fixtures import lf, lfc
 from rest_framework import status
 
-from diary.models import Note
+from diary.models import Note, Tag
 
 pytestmark = mark.django_db
 
@@ -74,6 +74,20 @@ def test_create(
 
     new_note = Note.objects.get(title=new_note_data['title'])
     assert response.json() == note_to_json(new_note)
+
+
+def test_create_note_creates_tags(
+    some_user_client,
+    note_list_url,
+    new_note_data,
+):
+    assert not Tag.objects.filter(name__in=new_note_data['tags']).exists()
+
+    some_user_client.post(note_list_url, data=new_note_data)
+
+    tags = Tag.objects.filter(name__in=new_note_data['tags'])
+    assert tags.exists()
+    assert [tag.name for tag in tags] == new_note_data['tags']
 
 
 def test_prevent_create_duplicate(
