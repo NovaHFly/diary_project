@@ -8,7 +8,11 @@ pytestmark = mark.django_db
 
 
 @fixture
-def updated_note_json(some_note, new_note_data, to_local_time):
+def updated_note_json(
+    some_note,
+    new_note_data,
+    to_local_time,
+):
     return {
         'id': some_note.id,
         'created_at': to_local_time(some_note.created_at).isoformat(),
@@ -17,7 +21,7 @@ def updated_note_json(some_note, new_note_data, to_local_time):
 
 @mark.usefixtures('some_note')
 @mark.parametrize(
-    ['client', 'url', 'status_code', 'response_content'],
+    ['client', 'url', 'status_code', 'expected_response_content'],
     [
         [
             lf('author_client'),
@@ -49,18 +53,18 @@ def test_get(
     client,
     url,
     status_code,
-    response_content,
+    expected_response_content,
 ):
     response = client.get(url)
     assert response.status_code == status_code
-    assert response.json() == response_content
+    assert response.json() == expected_response_content
 
 
 def test_create(
+    note_to_json,
     author_client,
     note_list_url,
     new_note_data,
-    note_to_json,
 ):
     note_count = Note.objects.count()
 
@@ -86,6 +90,7 @@ def test_prevent_create_duplicate(
     assert Note.objects.count() == note_count
 
 
+@mark.parametrize('method', ['put', 'patch'])
 @mark.parametrize(
     ['client', 'status_code', 'expected_json'],
     [
@@ -102,15 +107,20 @@ def test_prevent_create_duplicate(
     ],
 )
 def test_update(
+    note_to_json,
     client,
     note_detail_url,
-    new_note_data,
+    method,
     status_code,
     some_note,
-    note_to_json,
+    new_note_data,
     expected_json,
 ):
-    response = client.put(note_detail_url, data=new_note_data)
+    request_func = getattr(client, method)
+    response = request_func(
+        note_detail_url,
+        data=new_note_data,
+    )
     assert response.status_code == status_code
 
     new_note = Note.objects.get(id=some_note.id)
@@ -145,3 +155,20 @@ def test_ordering(author_client, note_list_url):
 
     notes = response.json()
     assert notes == sorted(notes, key=lambda x: x['created_at'], reverse=True)
+
+
+@mark.parametrize(
+    'url,method',
+    [
+        [lf('note_list_url'), 'get'],
+        [lf('note_list_url'), 'post'],
+        [lf('note_detail_url'), 'get'],
+        [lf('note_detail_url'), 'put'],
+        [lf('note_detail_url'), 'patch'],
+        [lf('note_detail_url'), 'delete'],
+    ],
+)
+def test_unauthorized_request(client, url, method):
+    request_func = getattr(client, method)
+    response = request_func(url)
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED

@@ -135,3 +135,20 @@ def test_ordering(author_client, tag_list_url):
 
     tags = response.json()
     assert tags == sorted(tags, key=lambda x: x['name'])
+
+
+@mark.parametrize(
+    'url,method',
+    [
+        [lf('tag_list_url'), 'get'],
+        [lf('tag_list_url'), 'post'],
+        [lf('tag_detail_url'), 'get'],
+        [lf('tag_detail_url'), 'put'],
+        [lf('tag_detail_url'), 'patch'],
+        [lf('tag_detail_url'), 'delete'],
+    ],
+)
+def test_unauthorized_request(client, url, method):
+    request_func = getattr(client, method)
+    response = request_func(url)
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED

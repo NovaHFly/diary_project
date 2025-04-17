@@ -134,8 +134,13 @@ def note_detail_url(some_note):
 
 
 @fixture
-def users_list_url():
+def user_list_url():
     return reverse('api:user-list')
+
+
+@fixture
+def user_detail_url(another_user):
+    return reverse('api:user-detail', kwargs={'id': another_user.id})
 
 
 @fixture
