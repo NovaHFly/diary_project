@@ -1,9 +1,14 @@
-import rest_framework.serializers as serializers
+from rest_framework.serializers import (
+    ListField,
+    ModelSerializer,
+    SlugField,
+    ValidationError,
+)
 
 from diary.models import Note, Tag
 
 
-class TagSerializer(serializers.ModelSerializer):
+class TagSerializer(ModelSerializer):
     class Meta:
         model = Tag
         fields = [
@@ -15,15 +20,13 @@ class TagSerializer(serializers.ModelSerializer):
         if Tag.objects.filter(
             author=self.context['request'].user, name=attrs['name']
         ):
-            raise serializers.ValidationError(
-                f'Tag with name {attrs["name"]} exists!'
-            )
+            raise ValidationError(f'Tag with name {attrs["name"]} exists!')
         return attrs
 
 
-class NoteSerializer(serializers.ModelSerializer):
-    tags = serializers.ListField(
-        child=serializers.SlugField(),
+class NoteSerializer(ModelSerializer):
+    tags = ListField(
+        child=SlugField(),
         write_only=True,
     )
 
@@ -41,9 +44,7 @@ class NoteSerializer(serializers.ModelSerializer):
         if Note.objects.filter(
             author=self.context['request'].user, title=attrs['title']
         ):
-            raise serializers.ValidationError(
-                f'Note with title {attrs["title"]} exists!'
-            )
+            raise ValidationError(f'Note with title {attrs["title"]} exists!')
         return attrs
 
     def to_representation(self, instance):

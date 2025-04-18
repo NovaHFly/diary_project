@@ -1,14 +1,24 @@
 from django.contrib.auth import get_user_model
-from django.db import models
+from django.db.models import (
+    CASCADE,
+    CharField,
+    DateTimeField,
+    ForeignKey,
+    ManyToManyField,
+    Model,
+    SlugField,
+    TextField,
+    UniqueConstraint,
+)
 
 from diary.constants import MAX_TITLE_LENGTH
 
 User = get_user_model()
 
 
-class Tag(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.SlugField(max_length=MAX_TITLE_LENGTH)
+class Tag(Model):
+    author = ForeignKey(User, on_delete=CASCADE)
+    name = SlugField(max_length=MAX_TITLE_LENGTH)
 
     def __str__(self) -> str:
         return self.name
@@ -16,21 +26,21 @@ class Tag(models.Model):
     class Meta:
         ordering = ['author', 'name']
         constraints = [
-            models.UniqueConstraint(
+            UniqueConstraint(
                 name='Unique tag name for author',
                 fields=['author', 'name'],
             ),
         ]
 
 
-class Note(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+class Note(Model):
+    created_at = DateTimeField(auto_now_add=True)
+    author = ForeignKey(User, on_delete=CASCADE)
 
-    title = models.CharField(max_length=MAX_TITLE_LENGTH)
-    text = models.TextField()
+    title = CharField(max_length=MAX_TITLE_LENGTH)
+    text = TextField()
 
-    tags = models.ManyToManyField(Tag, related_name='notes')
+    tags = ManyToManyField(Tag, related_name='notes')
 
     def __str__(self) -> str:
         return self.title
@@ -38,7 +48,7 @@ class Note(models.Model):
     class Meta:
         ordering = ['-created_at']
         constraints = [
-            models.UniqueConstraint(
+            UniqueConstraint(
                 name='Unique note title for author',
                 fields=['author', 'title'],
             ),
