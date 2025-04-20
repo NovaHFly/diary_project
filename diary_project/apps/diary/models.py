@@ -38,7 +38,7 @@ class Note(Model):
     author = ForeignKey(User, on_delete=CASCADE)
 
     title = CharField(max_length=MAX_TITLE_LENGTH)
-    text = TextField()
+    text = TextField(blank=True)
 
     tags = ManyToManyField(Tag, related_name='notes')
 
