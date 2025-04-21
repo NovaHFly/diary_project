@@ -180,7 +180,7 @@ def test_title_filter(author_client, note_list_url):
     response = author_client.get(note_list_url + f'?title={query}')
     response_ids = sorted(item['id'] for item in response.json())
     db_ids = sorted(
-        note.id for note in Note.objects.filter(title__contains=query)
+        note.id for note in Note.objects.filter(title__icontains=query)
     )
 
     assert response_ids == db_ids
