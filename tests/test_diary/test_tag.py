@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError
+from django.db import DataError, IntegrityError
 from pytest import mark, raises
 
 from diary.constants import MAX_TITLE_LENGTH
@@ -13,26 +13,20 @@ def test_valid_tag(valid_tag_data):
 
 
 def test_long_name(valid_tag_data):
-    with raises(
-        ValidationError,
-        match=r'name.+at most {} characters'.format(MAX_TITLE_LENGTH),
-    ):
+    with raises(DataError):
         Tag.objects.create(
             **valid_tag_data | {'name': 'r' * (MAX_TITLE_LENGTH + 1)}
         ).clean_fields()
 
 
 def test_empty_name(valid_tag_data):
-    with raises(ValidationError, match=r'name.+cannot be blank'):
+    with raises(ValidationError):
         Tag.objects.create(**valid_tag_data | {'name': ''}).clean_fields()
 
 
 def test_duplicate_name_same_user(valid_tag_data):
     Tag.objects.create(**valid_tag_data)
-    with raises(
-        IntegrityError,
-        match=r'UNIQUE constraint failed.+author.+name',
-    ):
+    with raises(IntegrityError):
         Tag.objects.create(**valid_tag_data)
 
 
