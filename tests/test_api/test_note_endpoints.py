@@ -23,7 +23,7 @@ def updated_note_json(
 
 @mark.usefixtures('some_note')
 @mark.parametrize(
-    ['client', 'url', 'status_code', 'expected_response_content'],
+    'client,url,status_code,expected_response_content',
     [
         [
             lf('author_client'),
@@ -108,7 +108,7 @@ def test_prevent_create_duplicate(
 
 @mark.parametrize('method', ['put', 'patch'])
 @mark.parametrize(
-    ['client', 'status_code', 'expected_json'],
+    'client,status_code,expected_json',
     [
         [
             lf('author_client'),
@@ -145,7 +145,7 @@ def test_update(
 
 
 @mark.parametrize(
-    ['client', 'status_code', 'deleted_items_count'],
+    'client,status_code,deleted_items_count',
     [
         [lf('author_client'), status.HTTP_204_NO_CONTENT, 1],
         [lf('another_client'), status.HTTP_404_NOT_FOUND, 0],

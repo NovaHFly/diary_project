@@ -11,7 +11,7 @@ pytestmark = mark.django_db
 
 @mark.usefixtures('some_tag')
 @mark.parametrize(
-    ['client', 'url', 'status_code', 'response_content'],
+    'client,url,status_code,response_content',
     [
         [
             lf('author_client'),
@@ -80,7 +80,7 @@ def test_prevent_create_duplicate(
 
 
 @mark.parametrize(
-    ['client', 'status_code', 'expected_tag_name'],
+    'client,status_code,expected_tag_name',
     [
         [
             lf('author_client'),
@@ -111,7 +111,7 @@ def test_update(
 
 
 @mark.parametrize(
-    ['client', 'status_code', 'deleted_items_count'],
+    'client,status_code,deleted_items_count',
     [
         [lf('author_client'), status.HTTP_204_NO_CONTENT, 1],
         [lf('another_client'), status.HTTP_404_NOT_FOUND, 0],
